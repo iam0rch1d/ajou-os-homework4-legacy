@@ -27,12 +27,19 @@ int main(int argc, char *argv[]) {
 	unsigned int reference;
 
 	reference = (unsigned int)atoi(argv[1]);
-	printf("The address %d contains:\n",reference);
+	printf("The address %d contains:\n", reference);
 
 	/* FILL IN YOUR CODE HERE */
+	int page_capacity = 1, i;
+	for (i = 0; i < PAGE_SIZE; i++) {
+		page_capacity *= 2;
+	}
 
-	printf("page number = %d\n",page_num);
-	printf("offset = %d\n",offset);
+	page_num = reference / page_capacity;
+	offset = reference % page_capacity;
+
+	printf("page number = %d\n", page_num);
+	printf("offset = %d\n", offset);
 
 	return 0;
 }
