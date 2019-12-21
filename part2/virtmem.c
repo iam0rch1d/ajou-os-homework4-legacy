@@ -13,7 +13,7 @@
 
 #define TLB_SIZE 16
 #define PAGES 256
-#dedine PAGE_BITS 8
+#define PAGE_BITS 8
 #define PAGE_MASK 255
 
 #define PAGE_SIZE 256
@@ -104,16 +104,21 @@ int main(int argc, const char *argv[])
 		
 		// If the page was not found from TLB
 		if (frame_num == -1) {
-			frame_num = check_pagetable(page_number);
+			frame_num = check_pagetable(page_num);
 			
 			// If the page was not brought into memory(page fault)
 			if (frame_num == -1) {
 				total_frames++;
 				frame_num = total_frames % PAGES;
-				add_to_pagetable(page_number, frame_number);
+				add_to_pagetable(page_num, frame_num);
 
 				page_faults++;
 			}
+
+			add_to_tlb(page_num, frame_num);
+		}
+		else {
+			tlb_hits++;
 		}
 
 		printf("Virtual address: %d Physical address: %d Value: %d\n", logical_address, physical_address, value);
