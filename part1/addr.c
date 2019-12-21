@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 /* page size in power of 2 */ 
-#define PAGE_SIZE 12 
+#define PAGE_SIZE_POWER2 12 
 /* The size of a page is 4 KB (12 bits)
  *
  * A memory reference appears as:
@@ -22,21 +22,19 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr,"Usage: ./a.out <virtual address>\n");
 		return -1;
 	}
-
-	int page_num, offset;
+	
+	int page_size;
+	int page_num;
+	int offset;
 	unsigned int reference;
 
 	reference = (unsigned int)atoi(argv[1]);
 	printf("The address %d contains:\n", reference);
 
 	/* FILL IN YOUR CODE HERE */
-	int page_capacity = 1, i;
-	for (i = 0; i < PAGE_SIZE; i++) {
-		page_capacity *= 2;
-	}
-
-	page_num = reference / page_capacity;
-	offset = reference % page_capacity;
+	page_size = 0x1 << PAGE_SIZE_POWER2;
+	page_num = reference / page_size;
+	offset = reference % page_size;
 
 	printf("page number = %d\n", page_num);
 	printf("offset = %d\n", offset);

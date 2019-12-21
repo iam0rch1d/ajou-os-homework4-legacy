@@ -1,6 +1,6 @@
 /**
  * virtmem.c 
- * Written by Michael Ballantyne 
+ * Written by Junyeong Yoon
  */
 
 #include <stdio.h>
@@ -42,9 +42,7 @@ signed char main_memory[MEMORY_SIZE];
 // Pointer to memory mapped backing file
 signed char *backing;
 
-
-int main(int argc, const char *argv[])
-{
+int main(int argc, const char *argv[]) {
 	if (argc != 3) {
 		fprintf(stderr, "Usage ./virtmem <backingstore> <input>\n");
 		exit(1);
@@ -82,9 +80,8 @@ int main(int argc, const char *argv[])
 		int physical_address;
 		signed char value;
 		
-
 		/* FILL IN YOUR CODE HERE */
-		/* YOU MAY ADD SEPARATE FUNCTION IF YOU DESIRE */
+		/* YOU MAY ADD SEPARATE FUNCTION IF YOU DESIRE */	
 
 		printf("Virtual address: %d Physical address: %d Value: %d\n", logical_address, physical_address, value);
 	}
