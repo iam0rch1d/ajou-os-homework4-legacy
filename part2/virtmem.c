@@ -13,6 +13,7 @@
 
 #define TLB_SIZE 16
 #define PAGES 256
+#dedine PAGE_BITS 8
 #define PAGE_MASK 255
 
 #define PAGE_SIZE 256
@@ -42,7 +43,14 @@ signed char main_memory[MEMORY_SIZE];
 // Pointer to memory mapped backing file
 signed char *backing;
 
-int main(int argc, const char *argv[]) {
+// Function prototypes
+int check_tlb(int page_number);
+void add_to_tlb(int page_num, int frame_num);
+int check_pagetable(int page_num);
+void add_to_pagetable(int page_num, int frame_num);
+
+int main(int argc, const char *argv[])
+{
 	if (argc != 3) {
 		fprintf(stderr, "Usage ./virtmem <backingstore> <input>\n");
 		exit(1);
@@ -68,20 +76,45 @@ int main(int argc, const char *argv[]) {
 
 	// Data we need to keep track of to compute stats at end.
 	int total_addresses = 0;
+	int total_frames = 0;
+	int total_tlb = 0;
 	int tlb_hits = 0;
 	int page_faults = 0;
 
 	// Number of the next unallocated physical page in main memory
 	unsigned char free_page = 0;
 
+	int logical_address;
+	int physical_address;
+	signed char value;
+
+	int frame_num;
+	int page_num;
+	int offset;
+
 	while (fgets(buffer, BUFFER_SIZE, input_fp) != NULL) {
 		total_addresses++;
-		int logical_address = atoi(buffer);
-		int physical_address;
-		signed char value;
 		
-		/* FILL IN YOUR CODE HERE */
-		/* YOU MAY ADD SEPARATE FUNCTION IF YOU DESIRE */	
+		logical_address = atoi(buffer);
+			
+		page_num = logical_address / PAGE_SIZE;
+		offset = logical_address % PAGE_SIZE;
+		
+		frame_num = check_tlb(page_num);
+		
+		// If the page was not found from TLB
+		if (frame_num == -1) {
+			frame_num = check_pagetable(page_number);
+			
+			// If the page was not brought into memory(page fault)
+			if (frame_num == -1) {
+				total_frames++;
+				frame_num = total_frames % PAGES;
+				add_to_pagetable(page_number, frame_number);
+
+				page_faults++;
+			}
+		}
 
 		printf("Virtual address: %d Physical address: %d Value: %d\n", logical_address, physical_address, value);
 	}
