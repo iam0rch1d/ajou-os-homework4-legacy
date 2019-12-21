@@ -15,14 +15,13 @@
 #define PAGES 256
 #define PAGE_BITS 8
 #define PAGE_MASK 255
-
 #define PAGE_SIZE 256
 #define OFFSET_BITS 8
 #define OFFSET_MASK 255
 
 #define MEMORY_SIZE PAGES * PAGE_SIZE
 
-// Max number of characters per line of input file to read.
+// Max number of characters per line of input file to read
 #define BUFFER_SIZE 10
 
 struct tlbentry {
@@ -30,15 +29,13 @@ struct tlbentry {
 	unsigned char frame_num;
 };
 
-// TLB is kept track of as a circular array, with the oldest element being overwritten once the TLB is full.
+// TLB is kept track of as a circular array, with the oldest element being overwritten once the TLB is full
 struct tlbentry tlb[TLB_SIZE];
-// Number of inserts into TLB that have been completed. Use as tlbindex % TLB_SIZE for the index of the next TLB line to use.
+// Number of inserts into TLB that have been completed. Use as tlbindex % TLB_SIZE for the index of the next TLB line to use
 int tlbindex = 0;
 
-// pagetable[logical_page] is the physical page number for logical page. Value is -1 if that logical page isn't yet in the table.
+// pagetable[logical_page] is the physical page number for logical page. Value is -1 if that logical page isn't yet in the table
 int pagetable[PAGES];
-
-signed char main_memory[MEMORY_SIZE];
 
 // Pointer to memory mapped backing file
 signed char *backing;
@@ -56,18 +53,19 @@ int main(int argc, const char *argv[])
 		exit(1);
 	}
 
-	// Backing store
+	// Load backing store data(*.bin)
 	const char *backing_filename = argv[1]; 
 	int backing_fd = open(backing_filename, O_RDONLY);
 
 	// Access backing store as memory through "backing" pointer
 	backing = mmap(0, MEMORY_SIZE, PROT_READ, MAP_PRIVATE, backing_fd, 0); 
-
+	
+	// Load virtual address list data(*.txt)
 	const char *input_filename = argv[2];
 	FILE *input_fp = fopen(input_filename, "r");
 	
-	int i;
 	// Fill all elements of the TLB entries with -1 for initially empty table
+	int i;
 	for (i = 0; i < TLB_SIZE; i++) {
 		tlb[i].page_num = -1;
 		tlb[i].frame_num = -1;
@@ -78,10 +76,10 @@ int main(int argc, const char *argv[])
 		pagetable[i] = -1;
 	}
 
-	// Character buffer for reading lines of input file.
+	// Character buffer for reading lines of input file
 	char buffer[BUFFER_SIZE];
 
-	// Data we need to keep track of to compute stats at end.
+	// Data we need to keep track of to compute stats at end
 	int total_addresses = 0;
 	int total_frames = 0;
 	int total_tlb = 0;
@@ -90,22 +88,24 @@ int main(int argc, const char *argv[])
 
 	// Number of the next unallocated physical page in main memory
 	unsigned char free_page = 0;
-
+	
+	// Address translation data
 	int logical_address;
 	int physical_address;
-	signed char value;
-
-	int frame_num;
+	
+	// Reference page number and frame number
 	int page_num;
+	int frame_num;
 	int offset;
+	signed char value;
 
 	while (fgets(buffer, BUFFER_SIZE, input_fp) != NULL) {
 		total_addresses++;
 		
 		logical_address = atoi(buffer);
 			
-		page_num = logical_address / PAGE_SIZE;
-		offset = logical_address % PAGE_SIZE;
+		page_num = (logical_address >> PAGE_BITS) & PAGE_MASK;
+		offset = logical_address & OFFSET_MASK;
 		
 		frame_num = check_tlb(page_num);
 		
@@ -134,7 +134,7 @@ int main(int argc, const char *argv[])
 		// Get the value
 		value = backing[frame_num];
 
-		printf("Virtual address: %d Physical address: %d Value: %d\n", logical_address, physical_address, value);
+		printf("Virtual address: %5d    Physical address: %5d    Value: %5d\n", logical_address, physical_address, value);
 	}
 
 	printf("Number of Translated Addresses = %d\n", total_addresses);
